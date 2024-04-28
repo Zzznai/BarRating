@@ -1,0 +1,56 @@
+﻿@model IEnumerable<Bar>
+
+@{
+    ViewData["Title"] = "Bars";
+}
+
+<div class="container mt-5">
+    <div class="row mb-3">
+        <div class="col">
+            <h2>Bars</h2>
+        </div>
+        <div class="col-auto">
+            <button id="addUserButton" onclick="window.location.href='@Url.Action("Create", "Bars")'" class="btn btn-primary" type="button">Add Bar</button>
+        </div>
+    </div>
+
+    <table id="dataTable" class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Number of reviews</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var bar in Model)
+            {
+                <tr>
+                    <td>@bar.Name</td>
+                    <td>@bar.Description</td>
+                    <td>@bar.Reviews.Count</td>
+                    <td>
+                        <button onclick="window.location.href='@Url.Action("Edit", "Bars", new { id = @bar.Id })'" class="btn btn-success btn-sm">Edit</button>
+                        <button onclick="deleteBar('@bar.Id')" class="btn btn-danger btn-sm">Delete</button>
+                        <button onclick="window.location.href='@Url.Action("Details", "Bars", new { id = @bar.Id })'" class="btn btn-primary btn-sm">Details</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@section Scripts {
+    <script>
+        function deleteBar(id) {
+            $.ajax({
+                type: "POST",
+                url: `/Bars/Delete/${id}`,
+                success: function (result) {
+                    window.location.reload();
+                }
+            })
+        }
+    </script>
+}

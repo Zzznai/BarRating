@@ -1,0 +1,38 @@
+﻿@model IEnumerable<Review>
+
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="container mt-5">
+    <div class="row mb-3">
+        <div class="col">
+            <h2>Reviews</h2>
+        </div>
+    </div>
+
+    <table id="dataTable" class="table table-striped">
+        <thead>
+            <tr>
+                <th>Bar Name</th>
+                <th>Comment</th>
+                <th>Date Posted</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var review in Model)
+            {
+                <tr>
+                    <td>@review.Bar.Name</td>
+                    <td>@review.Comment</td>
+                    <td>@review.PostedDate</td>
+                    <td>
+                        <button onclick="window.location.href='@Url.Action("Details", "Bars", new { id = review.Bar.Id })'" class="btn btn-success btn-sm">View</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+

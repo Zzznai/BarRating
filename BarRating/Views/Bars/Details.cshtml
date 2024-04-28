@@ -1,0 +1,154 @@
+﻿@model Bar
+
+@{
+    ViewData["Title"] = "Bar Details";
+}
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <img src="@Model.PhotoUrl" class="card-img-top" alt="Bar Image">
+                <div class="card-body">
+                    <h5 class="card-title">@Model.Name</h5>
+                    <p class="card-text">@Model.Description</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Leave a Review</h5>
+                    
+
+                    @if (User.IsInRole(GlobalConstants.AdministratorRoleName))
+                    {
+                        <p>You can't post reviews as admin.</p>
+                    }
+                    else if (User.Identity.IsAuthenticated)
+                    {
+                        <form asp-action="Create" asp-controller="Reviews" method="post">
+                            <input type="hidden" id="barId" name="barId" value="@Model.Id" />
+                            <div class="form-group">
+                                <label for="comment">Review Comment</label>
+                                <textarea class="form-control" id="reviewComment" name="comment" rows="5" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Submit Review</button>
+                        </form>
+                    }
+
+                </div>
+            </div>
+
+            <div class="card mt-4" id="editReviewFormContainer" style="display: none;">
+                <div class="card-body">
+                    <h5 class="card-title">Edit Review</h5>
+                    <form id="editReviewForm" class="edit-review-form">
+                        <input type="hidden" id="editReviewId" name="reviewId" value="" />
+                        <div class="form-group">
+                            <label for="editReviewComment">Edit Review Comment</label>
+                            <textarea class="form-control" id="editReviewComment" name="comment" rows="5" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Update Review</button>
+                    </form>
+                </div>
+            </div>
+            <div class="mt-4">
+                <h5>Previous Reviews</h5>
+                @if (Model.Reviews.Any())
+                {
+                    <ul class="list-group">
+                        @foreach (var review in Model.Reviews.OrderByDescending(r=>r.PostedDate))
+                        {
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>@review.User?.FirstName @review.User?.LastName</strong> - @review.PostedDate.ToShortDateString()
+                                    <p>@review.Comment</p>
+                                </div>
+                                @if (User.Identity.IsAuthenticated && review.User?.UserName == User.Identity?.Name)
+                                {
+                                    <div class="btn-group" role="group">
+                                        <button onclick="editReview(@review.Id)" class="btn btn-sm btn-primary">Edit</button>
+                                        <a href="/Reviews/Delete/@review.Id" class="btn btn-sm btn-danger">Delete</a>
+                                    </div>
+                                }
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p>No reviews available.</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+        <script>
+        function editReview(reviewId) {
+            $.ajax({
+                type: "GET",
+                url: "/Reviews/GetReview/"+reviewId,
+                success: function (review) {
+                    $("#editReviewId").val(review.id);
+                    $("#editReviewComment").val(review.comment);
+                    $("#editReviewFormContainer").show();
+                },
+                error: function (xhr, textStatus, errorThrown) {
+                    console.error("Error fetching review details:", errorThrown);
+                }
+            });
+        }
+
+        $("#editReviewForm").submit(function (event) {
+            event.preventDefault(); // Prevent default form submission
+
+            // Serialize form data
+            var formData = $("#editReviewForm").serialize();
+
+            // Submit form using AJAX
+            $.ajax({
+                type: "POST",
+                url: "/Reviews/UpdateReview", // Change this to your controller action URL
+                data: formData,
+                success: function (response) {
+                    console.log("Review updated successfully!");
+                    location.reload();
+                },
+                error: function (xhr, textStatus, errorThrown) {
+                    console.error("Error updating review:", errorThrown);
+                }
+            });
+
+            const updatedReview = {
+                id: $("#editReviewId").val(),
+                comment: $("#editReviewComment").val()
+            };
+
+            fetch('/Reviews/UpdateReview', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(updatedReview)
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Review updated successfully:', data);
+                    location.reload();
+                })
+                .catch(error => {
+                    console.error('Error updating review:', error);
+                });
+
+        });
+
+        </script>
+}

@@ -1,0 +1,60 @@
+﻿@model IEnumerable<ApplicationUser>
+
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="container mt-5">
+    <div class="row mb-3">
+        <div class="col">
+            <h2>Users</h2>
+        </div>
+        <div class="col-auto">
+            <button id="addUserButton" onclick="window.location.href='@Url.Action("Create", "Users")'" class="btn btn-primary" type="button">Add User</button>
+        </div>
+    </div>
+
+    <table id="dataTable" class="table table-striped">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in Model)
+            {
+                <tr>
+                    <td>@user.UserName</td>
+                    <td>@user.FirstName</td>
+                    <td>@user.LastName</td>
+                    <td>
+                        <button onclick="window.location.href='@Url.Action("Edit", "Users", new { id = @user.Id })'" class="btn btn-success btn-sm">Edit</button>
+                        <button onclick="deleteUser('@user.Id')" class="btn btn-danger btn-sm">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@section Scripts {
+    <script>
+        function deleteUser(id) {
+            console.log('Posting data with ID:', id);
+            $.ajax({
+                type: "POST",
+                url: `/Users/Delete/${encodeURIComponent(id)}`,
+                success: function (result) {
+                    console.log('POST request successful');
+                    window.location.reload();
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error:', error);
+                }
+            });
+        }
+    </script>
+}

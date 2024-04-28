@@ -1,0 +1,41 @@
+﻿@model BarsSearchViewModel
+
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="container mt-5">
+    <h1 class="mb-4">Search Bars</h1>
+
+    <form method="post" action="@Url.Action("Index", "Home")">
+        <div class="input-group mb-3">
+            <input asp-for="Name" type="text" class="form-control" placeholder="Search by full name...">
+            <button type="submit" class="btn btn-primary">Search</button>
+        </div>
+     </form>
+
+    <div id="resultsContainer" class="row row-cols-1 row-cols-md-3 g-4">
+
+        @foreach (var bar in Model.Bars)
+        {
+            <div class="col">
+                <div class="card h-100">
+                    <img src="@bar.PhotoUrl" class="card-img-top" alt="Bar 1">
+                    <div class="card-body">
+                        <h5 class="card-title">@bar.Name</h5>
+                        <p class="card-text">@bar.Description</p>
+                        <a href="#" class="btn btn-primary">
+                            @bar.Reviews.Count
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chat-square" viewBox="0 0 16 16">
+                                <path d="M1 1.5A1.5 1.5 0 0 1 2.5 0h10A1.5 1.5 0 0 1 14 1.5v9a1.5 1.5 0 0 1-1.5 1.5H8.354l-2.573 2.573a.5.5 0 0 1-.708 0L2.5 12.854V10.5a1.5 1.5 0 0 1-1.5-1.5v-7zM8 1a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-3.5a.5.5 0 0 1-.354-.854L10.646 10H8V1z" />
+                            </svg>
+                        </a>
+                        <a href="@Url.Action("Details", "Bars", new {id = @bar.Id})" class="btn btn-primary">View Details</a>
+
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+

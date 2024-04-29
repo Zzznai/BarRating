@@ -1,9 +1,11 @@
 ﻿using BarRating.Commons;
+using BarRating.Data;
 using BarRating.Data.Entities;
 using BarRating.Models.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Data;
 
 namespace BarRating.Controllers
@@ -12,10 +14,12 @@ namespace BarRating.Controllers
     public class UsersController : Controller
     {
         private readonly UserManager<ApplicationUser> userManager;
+        private readonly BarRatingDbContext dbContext;
 
-        public UsersController(UserManager<ApplicationUser> userManager)
+        public UsersController(UserManager<ApplicationUser> userManager, BarRatingDbContext dbContext)
         {
             this.userManager = userManager;
+            this.dbContext = dbContext;
         }
 
         public async Task<IActionResult> Index()
@@ -166,8 +170,20 @@ namespace BarRating.Controllers
                 return NotFound();
             }
 
-            var result = await userManager.DeleteAsync(user);
+            // Fetch reviews associated with the user
+            var userReviews = dbContext.Reviews.Where(r => r.User.Id == id).ToList();
 
+            // Delete associated reviews
+            foreach (var review in userReviews)
+            {
+                dbContext.Reviews.Remove(review);
+            }
+
+            // Save changes to the database
+            await dbContext.SaveChangesAsync();
+
+            // Delete the user
+            var result = await userManager.DeleteAsync(user);
 
             if (result.Succeeded)
             {
@@ -183,5 +199,7 @@ namespace BarRating.Controllers
                 return RedirectToAction("Index");
             }
         }
+
+
     }
 }
